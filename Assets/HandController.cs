@@ -1,3 +1,4 @@
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -64,24 +65,25 @@ public class HandController : MonoBehaviour
             }
         }
         
-        // Speed
+        // Release
+        bool grabReleased =  InputManager.GetAction("Grab").WasReleasedThisFrame();
+        if (grabReleased && _ball is not null)
+        {
+            // Reset currently grabbed object 
+            ReleaseBall();
+            _ball = null;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // Release Speed
         if (_ball is not null)
         {
             Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _ball.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
             _lastThreeDistanceDiffs[_avgSpeedIndex++ % _lastThreeDistanceDiffs.Length] = positionXZ - _ball.transform.position;
             _ball.transform.position = positionXZ;
         }
-        
-        // Release
-        bool grabReleased =  InputManager.GetAction("Grab").WasReleasedThisFrame();
-        if (grabReleased)
-        {
-            // Reset currently grabbed object 
-            ReleaseBall();
-            _ball = null;
-        }
-
-        
     }
 
     void ReleaseBall()
@@ -93,7 +95,10 @@ public class HandController : MonoBehaviour
             averageDirection += _lastThreeDistanceDiffs[i].normalized;
             averageSpeed += _lastThreeDistanceDiffs[i].magnitude;
         }
+        averageDirection.y = 0;
         _ball.Speed = averageSpeed / _lastThreeDistanceDiffs.Length;
         _ball.Direction = averageDirection /  _lastThreeDistanceDiffs.Length;
+
+        _ball.released = true;
     }
 }
