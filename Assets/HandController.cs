@@ -10,6 +10,7 @@ public class HandController : MonoBehaviour
     private InputActionMap _playerActionMap;
 
     private Collider _collider;
+    private Vector3 _posAtGrabStartDiff;
 
     private Puck _puck;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -40,6 +41,7 @@ public class HandController : MonoBehaviour
         {
             this.transform.position = hit.point;
         }
+        // Todo - make the hand not snap back and forth when leaving possible raycast area, instead just have it clamp to the edges? 
     }
 
     void UpdateGrab()
@@ -58,6 +60,7 @@ public class HandController : MonoBehaviour
                 {
                     // Puck will now follow my hand
                     _puck = col.GetComponent<Puck>();
+                    _posAtGrabStartDiff = _puck.transform.position - this.transform.position;
                 }
             }
         }
@@ -71,7 +74,7 @@ public class HandController : MonoBehaviour
 
         if (_puck is not null)
         {
-            Vector3 positionXZ = new Vector3(transform.position.x, _puck.transform.position.y, transform.position.z);
+            Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _puck.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
             _puck.transform.position = positionXZ;
         }
             
