@@ -11,8 +11,9 @@ public class HandController : MonoBehaviour
 
     private Collider _collider;
     private Vector3 _posAtGrabStartDiff;
+    private Vector3 _releaseSpeed;
 
-    private Puck _puck;
+    private Ball _ball;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -50,17 +51,17 @@ public class HandController : MonoBehaviour
         bool grabPressed = _playerActionMap.FindAction("Grab").WasPressedThisFrame();
         if (grabPressed)
         {
-            _puck = null;
+            _ball = null;
             
             // Is my collider overlapping with the pucks? 
             Collider[] colliders = Physics.OverlapBox(this.transform.position, Vector3.one * 0.5f, quaternion.identity);
             foreach (Collider col in colliders)
             {
-                if (col.GetComponent<Puck>())
+                if (col.GetComponent<Ball>())
                 {
                     // Puck will now follow my hand
-                    _puck = col.GetComponent<Puck>();
-                    _posAtGrabStartDiff = _puck.transform.position - this.transform.position;
+                    _ball = col.GetComponent<Ball>();
+                    _posAtGrabStartDiff = _ball.transform.position - this.transform.position;
                 }
             }
         }
@@ -69,14 +70,21 @@ public class HandController : MonoBehaviour
         if (grabReleased)
         {
             // Reset currently grabbed object 
-            _puck = null;
+            ReleaseBall();
+            _ball = null;
         }
 
-        if (_puck is not null)
+        if (_ball is not null)
         {
-            Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _puck.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
-            _puck.transform.position = positionXZ;
-        }
             
+            Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _ball.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
+            _releaseSpeed = positionXZ - _ball.transform.position;
+            _ball.transform.position = positionXZ;
+        }
+    }
+
+    void ReleaseBall()
+    {
+        _ball.Speed = _releaseSpeed;
     }
 }
