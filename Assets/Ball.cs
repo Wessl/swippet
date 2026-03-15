@@ -42,8 +42,12 @@ public class Ball : MonoBehaviour
     {
         if (collision.transform.GetComponent<Bouncer>() is var bouncer && bouncer is not null)
         {
-            Vector3 reflect =  Vector3.Reflect(_direction, collision.contacts[0].normal);
-            _direction = reflect;
+            Vector3 reflect = Vector3.zero;
+            foreach (var contact in collision.contacts)
+            {
+                reflect += Vector3.Reflect(_direction, collision.contacts[0].normal);
+            }
+            _direction = reflect.normalized;
         }
     }
 }

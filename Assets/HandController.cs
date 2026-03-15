@@ -6,9 +6,7 @@ public class HandController : MonoBehaviour
 {
     [SerializeField] private int handRaycastHitRange = 100;
     private int _groundLayerMask;
-    [SerializeField] private InputActionAsset actionAsset;
-    private InputActionMap _playerActionMap;
-
+    
     private Collider _collider;
     private Vector3 _posAtGrabStartDiff;
     private Vector3 _speed;
@@ -21,8 +19,6 @@ public class HandController : MonoBehaviour
     {
         _groundLayerMask = LayerMask.GetMask("Ground");
         _collider = GetComponent<Collider>();
-        actionAsset.Enable();
-        _playerActionMap = actionAsset.FindActionMap("Player");
     }
 
     // Update is called once per frame
@@ -50,7 +46,7 @@ public class HandController : MonoBehaviour
     void UpdateGrab()
     {
         // Get input
-        bool grabPressed = _playerActionMap.FindAction("Grab").WasPressedThisFrame();
+        bool grabPressed = InputManager.GetAction("Grab").WasPressedThisFrame();
         if (grabPressed)
         {
             _ball = null;
@@ -77,7 +73,7 @@ public class HandController : MonoBehaviour
         }
         
         // Release
-        bool grabReleased =  _playerActionMap.FindAction("Grab").WasReleasedThisFrame();
+        bool grabReleased =  InputManager.GetAction("Grab").WasReleasedThisFrame();
         if (grabReleased)
         {
             // Reset currently grabbed object 
