@@ -11,7 +11,9 @@ public class HandController : MonoBehaviour
 
     private Collider _collider;
     private Vector3 _posAtGrabStartDiff;
-    private Vector3 _releaseSpeed;
+    private Vector3 _speed;
+    private int _avgSpeedIndex;
+    private Vector3[] _lastThreeDistanceDiffs = new Vector3[3];
 
     private Ball _ball;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -66,6 +68,15 @@ public class HandController : MonoBehaviour
             }
         }
         
+        // Speed
+        if (_ball is not null)
+        {
+            Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _ball.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
+            _lastThreeDistanceDiffs[_avgSpeedIndex++ % _lastThreeDistanceDiffs.Length] = positionXZ - _ball.transform.position;
+            _ball.transform.position = positionXZ;
+        }
+        
+        // Release
         bool grabReleased =  _playerActionMap.FindAction("Grab").WasReleasedThisFrame();
         if (grabReleased)
         {
@@ -74,17 +85,19 @@ public class HandController : MonoBehaviour
             _ball = null;
         }
 
-        if (_ball is not null)
-        {
-            
-            Vector3 positionXZ = new Vector3(transform.position.x + _posAtGrabStartDiff.x, _ball.transform.position.y, transform.position.z + _posAtGrabStartDiff.z);
-            _releaseSpeed = positionXZ - _ball.transform.position;
-            _ball.transform.position = positionXZ;
-        }
+        
     }
 
     void ReleaseBall()
     {
-        _ball.Speed = _releaseSpeed;
+        float averageSpeed = 0;
+        Vector3 averageDirection =  Vector3.zero;
+        for (int i = 0; i < _lastThreeDistanceDiffs.Length; i++)
+        {
+            averageDirection += _lastThreeDistanceDiffs[i].normalized;
+            averageSpeed += _lastThreeDistanceDiffs[i].magnitude;
+        }
+        _ball.Speed = averageSpeed / _lastThreeDistanceDiffs.Length;
+        _ball.Direction = averageDirection /  _lastThreeDistanceDiffs.Length;
     }
 }
